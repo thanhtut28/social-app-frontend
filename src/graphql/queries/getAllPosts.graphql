@@ -1,0 +1,21 @@
+query AllPosts($input: GetAllPostsInput!) {
+   allPosts(input: $input) {
+      id
+      title
+      image
+      likeCount
+      likeStatus
+      author {
+         name
+      }
+      createdAt
+      comments {
+         id
+         comment
+         createdAt
+         author {
+            name
+         }
+      }
+   }
+}
