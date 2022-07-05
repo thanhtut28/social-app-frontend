@@ -181,16 +181,56 @@ export type Follows = {
   followingId: Scalars['Int'];
 };
 
-export type AllPostsQueryVariables = Exact<{
+export type LoginMutationVariables = Exact<{
+  input: LoginInput;
+}>;
+
+
+export type LoginMutation = { __typename?: 'Mutation', signIn?: { __typename?: 'LoginResponse', accessToken: string } | null };
+
+export type GetAllPostsQueryVariables = Exact<{
   input: GetAllPostsInput;
 }>;
 
 
-export type AllPostsQuery = { __typename?: 'Query', allPosts: Array<{ __typename?: 'Post', id: string, title: string, image?: string | null, likeCount: number, likeStatus: boolean, createdAt: any, author: { __typename?: 'User', name: string }, comments: Array<{ __typename?: 'Comment', id: string, comment: string, createdAt: any, author: { __typename?: 'User', name: string } }> }> };
+export type GetAllPostsQuery = { __typename?: 'Query', allPosts: Array<{ __typename?: 'Post', id: string, title: string, image?: string | null, likeCount: number, likeStatus: boolean, createdAt: any, author: { __typename?: 'User', name: string }, comments: Array<{ __typename?: 'Comment', id: string, comment: string, createdAt: any, author: { __typename?: 'User', name: string } }> }> };
 
 
-export const AllPostsDocument = gql`
-    query AllPosts($input: GetAllPostsInput!) {
+export const LoginDocument = gql`
+    mutation Login($input: LoginInput!) {
+  signIn(input: $input) {
+    accessToken
+  }
+}
+    `;
+export type LoginMutationFn = Apollo.MutationFunction<LoginMutation, LoginMutationVariables>;
+
+/**
+ * __useLoginMutation__
+ *
+ * To run a mutation, you first call `useLoginMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useLoginMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [loginMutation, { data, loading, error }] = useLoginMutation({
+ *   variables: {
+ *      input: // value for 'input'
+ *   },
+ * });
+ */
+export function useLoginMutation(baseOptions?: Apollo.MutationHookOptions<LoginMutation, LoginMutationVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useMutation<LoginMutation, LoginMutationVariables>(LoginDocument, options);
+      }
+export type LoginMutationHookResult = ReturnType<typeof useLoginMutation>;
+export type LoginMutationResult = Apollo.MutationResult<LoginMutation>;
+export type LoginMutationOptions = Apollo.BaseMutationOptions<LoginMutation, LoginMutationVariables>;
+export const GetAllPostsDocument = gql`
+    query GetAllPosts($input: GetAllPostsInput!) {
   allPosts(input: $input) {
     id
     title
@@ -214,29 +254,29 @@ export const AllPostsDocument = gql`
     `;
 
 /**
- * __useAllPostsQuery__
+ * __useGetAllPostsQuery__
  *
- * To run a query within a React component, call `useAllPostsQuery` and pass it any options that fit your needs.
- * When your component renders, `useAllPostsQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * To run a query within a React component, call `useGetAllPostsQuery` and pass it any options that fit your needs.
+ * When your component renders, `useGetAllPostsQuery` returns an object from Apollo Client that contains loading, error, and data properties
  * you can use to render your UI.
  *
  * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
  *
  * @example
- * const { data, loading, error } = useAllPostsQuery({
+ * const { data, loading, error } = useGetAllPostsQuery({
  *   variables: {
  *      input: // value for 'input'
  *   },
  * });
  */
-export function useAllPostsQuery(baseOptions: Apollo.QueryHookOptions<AllPostsQuery, AllPostsQueryVariables>) {
+export function useGetAllPostsQuery(baseOptions: Apollo.QueryHookOptions<GetAllPostsQuery, GetAllPostsQueryVariables>) {
         const options = {...defaultOptions, ...baseOptions}
-        return Apollo.useQuery<AllPostsQuery, AllPostsQueryVariables>(AllPostsDocument, options);
+        return Apollo.useQuery<GetAllPostsQuery, GetAllPostsQueryVariables>(GetAllPostsDocument, options);
       }
-export function useAllPostsLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<AllPostsQuery, AllPostsQueryVariables>) {
+export function useGetAllPostsLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<GetAllPostsQuery, GetAllPostsQueryVariables>) {
           const options = {...defaultOptions, ...baseOptions}
-          return Apollo.useLazyQuery<AllPostsQuery, AllPostsQueryVariables>(AllPostsDocument, options);
+          return Apollo.useLazyQuery<GetAllPostsQuery, GetAllPostsQueryVariables>(GetAllPostsDocument, options);
         }
-export type AllPostsQueryHookResult = ReturnType<typeof useAllPostsQuery>;
-export type AllPostsLazyQueryHookResult = ReturnType<typeof useAllPostsLazyQuery>;
-export type AllPostsQueryResult = Apollo.QueryResult<AllPostsQuery, AllPostsQueryVariables>;
+export type GetAllPostsQueryHookResult = ReturnType<typeof useGetAllPostsQuery>;
+export type GetAllPostsLazyQueryHookResult = ReturnType<typeof useGetAllPostsLazyQuery>;
+export type GetAllPostsQueryResult = Apollo.QueryResult<GetAllPostsQuery, GetAllPostsQueryVariables>;

@@ -1,11 +1,7 @@
 import "../styles/globals.css";
 import type { AppProps } from "next/app";
-import { ApolloClient, InMemoryCache, ApolloProvider } from "@apollo/client";
-
-const client = new ApolloClient({
-   uri: "http://localhost:4000/graphql",
-   cache: new InMemoryCache(),
-});
+import { ApolloProvider } from "@apollo/client";
+import { client } from "@/utils/apollo";
 
 function MyApp({ Component, pageProps }: AppProps) {
    return (

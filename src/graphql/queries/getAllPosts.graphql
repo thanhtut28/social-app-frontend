@@ -1,4 +1,4 @@
-query AllPosts($input: GetAllPostsInput!) {
+query GetAllPosts($input: GetAllPostsInput!) {
    allPosts(input: $input) {
       id
       title
