@@ -9,13 +9,6 @@ query GetAllPosts($input: GetAllPostsInput!) {
          name
       }
       createdAt
-      comments {
-         id
-         comment
-         createdAt
-         author {
-            name
-         }
-      }
+      commentsCount
    }
 }

@@ -2,7 +2,7 @@ import { createHttpLink, ApolloLink, ApolloClient, InMemoryCache, from } from "@
 import { onError } from "@apollo/client/link/error";
 import { TokenRefreshLink } from "apollo-link-token-refresh";
 import jwtDecode from "jwt-decode";
-import { getAccessToken } from "./getAccessToken";
+import { getAccessToken, setAccessToken } from "./getAccessToken";
 
 const httpLink = createHttpLink({
    uri: `${process.env.NEXT_PUBLIC_SERVER_URL}/graphql`,
@@ -67,9 +67,8 @@ const refreshTokenLink = new TokenRefreshLink({
    },
    handleFetch: accessToken => {
       // const accessTokenDecrypted = jwtDecode(accessToken);
-      // setAccessToken(accessToken);
+      setAccessToken(accessToken);
       // setExpiresIn(parseExp(accessTokenDecrypted.exp).toString());
-      return accessToken;
    },
    handleError: err => {
       // full control over handling token fetch Error

@@ -1,0 +1,9 @@
+fragment CommentDetails on Comment {
+   id
+   createdAt
+   comment
+   author {
+      id
+      name
+   }
+}

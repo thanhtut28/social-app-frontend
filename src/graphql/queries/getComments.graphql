@@ -1,0 +1,8 @@
+query GetComments($input: GetCommentsInput!) {
+   getComments(input: $input) {
+      ...CommentDetails
+      children {
+         ...CommentDetails
+      }
+   }
+}
