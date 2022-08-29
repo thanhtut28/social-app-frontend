@@ -2,6 +2,8 @@ fragment CommentDetails on Comment {
    id
    createdAt
    comment
+   parentId
+   isAuthor
    author {
       id
       name

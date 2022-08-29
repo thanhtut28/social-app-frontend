@@ -1,10 +1,10 @@
-import LoginForm from "@/components/form/loginForm";
+import SignUpForm from "@/components/form/signUpForm";
 import { NextPage } from "next";
 
 const Login: NextPage = () => {
    return (
       <div className="h-screen">
-         <LoginForm />
+         <SignUpForm />
       </div>
    );
 };

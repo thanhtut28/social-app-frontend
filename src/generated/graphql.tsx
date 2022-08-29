@@ -38,10 +38,17 @@ export type Comment = {
   comment: Scalars['String'];
   createdAt: Scalars['Date'];
   id: Scalars['Int'];
+  isAuthor: Scalars['Boolean'];
   parent?: Maybe<Comment>;
   parentId?: Maybe<Scalars['Int']>;
   post: Post;
   postId: Scalars['Int'];
+};
+
+export type Error = {
+  __typename?: 'Error';
+  field: Scalars['String'];
+  message: Scalars['String'];
 };
 
 export type GetAllPostsInput = {
@@ -53,6 +60,11 @@ export type GetCommentsInput = {
   cursor?: InputMaybe<Scalars['Int']>;
   limit: Scalars['Int'];
   postId: Scalars['Int'];
+};
+
+export type IBaseNotificationEvent = {
+  /** Event type */
+  eventType: NotificationEventType;
 };
 
 export type Like = {
@@ -73,7 +85,7 @@ export type LoginInput = {
 export type LoginResponse = {
   __typename?: 'LoginResponse';
   accessToken: Scalars['String'];
-  user: User;
+  error?: Maybe<Error>;
 };
 
 export type Mutation = {
@@ -87,8 +99,8 @@ export type Mutation = {
   likePost: Scalars['Boolean'];
   logout: Scalars['Boolean'];
   savedToCollections: Scalars['Boolean'];
-  signIn?: Maybe<LoginResponse>;
-  signUp?: Maybe<User>;
+  signIn: LoginResponse;
+  signUp: SignUpResponse;
   updateComment: Comment;
   updatePost?: Maybe<Post>;
 };
@@ -160,6 +172,27 @@ export type MutationUpdatePostArgs = {
   title?: InputMaybe<Scalars['String']>;
 };
 
+/** When a new post is created */
+export type NotificationEvent = IBaseNotificationEvent & {
+  __typename?: 'NotificationEvent';
+  /** Event type */
+  eventType: NotificationEventType;
+  /** Notification Type */
+  notificationType: NotificationType;
+  /** User who created notification event */
+  user?: Maybe<User>;
+};
+
+export enum NotificationEventType {
+  NewNotification = 'NewNotification'
+}
+
+export enum NotificationType {
+  Comment = 'Comment',
+  Follow = 'Follow',
+  Like = 'Like'
+}
+
 export type Post = {
   __typename?: 'Post';
   author: User;
@@ -180,7 +213,7 @@ export type Query = {
   allPosts: Array<Post>;
   allUsers: Array<User>;
   getComments: Array<Comment>;
-  me?: Maybe<User>;
+  profile?: Maybe<User>;
 };
 
 
@@ -193,10 +226,26 @@ export type QueryGetCommentsArgs = {
   input: GetCommentsInput;
 };
 
+
+export type QueryProfileArgs = {
+  name: Scalars['String'];
+};
+
 export type SignUpInput = {
   email: Scalars['String'];
   name: Scalars['String'];
   password: Scalars['String'];
+};
+
+export type SignUpResponse = {
+  __typename?: 'SignUpResponse';
+  accessToken: Scalars['String'];
+  error?: Maybe<Error>;
+};
+
+export type Subscription = {
+  __typename?: 'Subscription';
+  notification?: Maybe<NotificationEvent>;
 };
 
 export type User = {
@@ -221,7 +270,7 @@ export type Follows = {
   followingId: Scalars['Int'];
 };
 
-export type CommentDetailsFragment = { __typename?: 'Comment', id: number, createdAt: any, comment: string, author: { __typename?: 'User', id: number, name: string } };
+export type CommentDetailsFragment = { __typename?: 'Comment', id: number, createdAt: any, comment: string, parentId?: number | null, isAuthor: boolean, author: { __typename?: 'User', id: number, name: string } };
 
 export type CommentsCountFragment = { __typename?: 'Post', commentsCount: number };
 
@@ -233,7 +282,7 @@ export type CreateCommentMutationVariables = Exact<{
 }>;
 
 
-export type CreateCommentMutation = { __typename?: 'Mutation', createComment: { __typename?: 'Comment', id: number, createdAt: any, comment: string, author: { __typename?: 'User', id: number, name: string } } };
+export type CreateCommentMutation = { __typename?: 'Mutation', createComment: { __typename?: 'Comment', id: number, createdAt: any, comment: string, parentId?: number | null, isAuthor: boolean, author: { __typename?: 'User', id: number, name: string } } };
 
 export type CreateReplyMutationVariables = Exact<{
   comment: Scalars['String'];
@@ -242,7 +291,7 @@ export type CreateReplyMutationVariables = Exact<{
 }>;
 
 
-export type CreateReplyMutation = { __typename?: 'Mutation', createReply: { __typename?: 'Comment', id: number, createdAt: any, comment: string, author: { __typename?: 'User', id: number, name: string } } };
+export type CreateReplyMutation = { __typename?: 'Mutation', createReply: { __typename?: 'Comment', id: number, createdAt: any, comment: string, parentId?: number | null, isAuthor: boolean, author: { __typename?: 'User', id: number, name: string } } };
 
 export type LikePostMutationVariables = Exact<{
   postId: Scalars['Int'];
@@ -256,7 +305,22 @@ export type LoginMutationVariables = Exact<{
 }>;
 
 
-export type LoginMutation = { __typename?: 'Mutation', signIn?: { __typename?: 'LoginResponse', accessToken: string } | null };
+export type LoginMutation = { __typename?: 'Mutation', signIn: { __typename?: 'LoginResponse', accessToken: string, error?: { __typename?: 'Error', message: string, field: string } | null } };
+
+export type SignUpMutationVariables = Exact<{
+  input: SignUpInput;
+}>;
+
+
+export type SignUpMutation = { __typename?: 'Mutation', signUp: { __typename?: 'SignUpResponse', accessToken: string, error?: { __typename?: 'Error', message: string, field: string } | null } };
+
+export type UpdateCommentMutationVariables = Exact<{
+  commentId: Scalars['Int'];
+  newComment: Scalars['String'];
+}>;
+
+
+export type UpdateCommentMutation = { __typename?: 'Mutation', updateComment: { __typename?: 'Comment', id: number, createdAt: any, comment: string, parentId?: number | null, isAuthor: boolean, author: { __typename?: 'User', id: number, name: string } } };
 
 export type GetAllPostsQueryVariables = Exact<{
   input: GetAllPostsInput;
@@ -270,13 +334,27 @@ export type GetCommentsQueryVariables = Exact<{
 }>;
 
 
-export type GetCommentsQuery = { __typename?: 'Query', getComments: Array<{ __typename?: 'Comment', id: number, createdAt: any, comment: string, children?: Array<{ __typename?: 'Comment', id: number, createdAt: any, comment: string, author: { __typename?: 'User', id: number, name: string } }> | null, author: { __typename?: 'User', id: number, name: string } }> };
+export type GetCommentsQuery = { __typename?: 'Query', getComments: Array<{ __typename?: 'Comment', id: number, createdAt: any, comment: string, parentId?: number | null, isAuthor: boolean, children?: Array<{ __typename?: 'Comment', id: number, createdAt: any, comment: string, parentId?: number | null, isAuthor: boolean, author: { __typename?: 'User', id: number, name: string } }> | null, author: { __typename?: 'User', id: number, name: string } }> };
+
+export type ProfileQueryVariables = Exact<{
+  name: Scalars['String'];
+}>;
+
+
+export type ProfileQuery = { __typename?: 'Query', profile?: { __typename?: 'User', id: number, name: string, postsCount: number, followersCount: number, followingCount: number, posts: Array<{ __typename?: 'Post', id: number, title?: string | null, image: string }> } | null };
+
+export type NotificationSubscriptionVariables = Exact<{ [key: string]: never; }>;
+
+
+export type NotificationSubscription = { __typename?: 'Subscription', notification?: { __typename?: 'NotificationEvent', eventType: NotificationEventType, notificationType: NotificationType, user?: { __typename?: 'User', id: number, name: string } | null } | null };
 
 export const CommentDetailsFragmentDoc = gql`
     fragment CommentDetails on Comment {
   id
   createdAt
   comment
+  parentId
+  isAuthor
   author {
     id
     name
@@ -398,6 +476,10 @@ export const LoginDocument = gql`
     mutation Login($input: LoginInput!) {
   signIn(input: $input) {
     accessToken
+    error {
+      message
+      field
+    }
   }
 }
     `;
@@ -427,6 +509,77 @@ export function useLoginMutation(baseOptions?: Apollo.MutationHookOptions<LoginM
 export type LoginMutationHookResult = ReturnType<typeof useLoginMutation>;
 export type LoginMutationResult = Apollo.MutationResult<LoginMutation>;
 export type LoginMutationOptions = Apollo.BaseMutationOptions<LoginMutation, LoginMutationVariables>;
+export const SignUpDocument = gql`
+    mutation SignUp($input: SignUpInput!) {
+  signUp(input: $input) {
+    error {
+      message
+      field
+    }
+    accessToken
+  }
+}
+    `;
+export type SignUpMutationFn = Apollo.MutationFunction<SignUpMutation, SignUpMutationVariables>;
+
+/**
+ * __useSignUpMutation__
+ *
+ * To run a mutation, you first call `useSignUpMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useSignUpMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [signUpMutation, { data, loading, error }] = useSignUpMutation({
+ *   variables: {
+ *      input: // value for 'input'
+ *   },
+ * });
+ */
+export function useSignUpMutation(baseOptions?: Apollo.MutationHookOptions<SignUpMutation, SignUpMutationVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useMutation<SignUpMutation, SignUpMutationVariables>(SignUpDocument, options);
+      }
+export type SignUpMutationHookResult = ReturnType<typeof useSignUpMutation>;
+export type SignUpMutationResult = Apollo.MutationResult<SignUpMutation>;
+export type SignUpMutationOptions = Apollo.BaseMutationOptions<SignUpMutation, SignUpMutationVariables>;
+export const UpdateCommentDocument = gql`
+    mutation UpdateComment($commentId: Int!, $newComment: String!) {
+  updateComment(commentId: $commentId, newComment: $newComment) {
+    ...CommentDetails
+  }
+}
+    ${CommentDetailsFragmentDoc}`;
+export type UpdateCommentMutationFn = Apollo.MutationFunction<UpdateCommentMutation, UpdateCommentMutationVariables>;
+
+/**
+ * __useUpdateCommentMutation__
+ *
+ * To run a mutation, you first call `useUpdateCommentMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useUpdateCommentMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [updateCommentMutation, { data, loading, error }] = useUpdateCommentMutation({
+ *   variables: {
+ *      commentId: // value for 'commentId'
+ *      newComment: // value for 'newComment'
+ *   },
+ * });
+ */
+export function useUpdateCommentMutation(baseOptions?: Apollo.MutationHookOptions<UpdateCommentMutation, UpdateCommentMutationVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useMutation<UpdateCommentMutation, UpdateCommentMutationVariables>(UpdateCommentDocument, options);
+      }
+export type UpdateCommentMutationHookResult = ReturnType<typeof useUpdateCommentMutation>;
+export type UpdateCommentMutationResult = Apollo.MutationResult<UpdateCommentMutation>;
+export type UpdateCommentMutationOptions = Apollo.BaseMutationOptions<UpdateCommentMutation, UpdateCommentMutationVariables>;
 export const GetAllPostsDocument = gql`
     query GetAllPosts($input: GetAllPostsInput!) {
   allPosts(input: $input) {
@@ -473,7 +626,7 @@ export type GetAllPostsLazyQueryHookResult = ReturnType<typeof useGetAllPostsLaz
 export type GetAllPostsQueryResult = Apollo.QueryResult<GetAllPostsQuery, GetAllPostsQueryVariables>;
 export const GetCommentsDocument = gql`
     query GetComments($input: GetCommentsInput!) {
-  getComments(input: $input) {
+  getComments(input: $input) @connection(key: "comments") {
     ...CommentDetails
     children {
       ...CommentDetails
@@ -509,3 +662,81 @@ export function useGetCommentsLazyQuery(baseOptions?: Apollo.LazyQueryHookOption
 export type GetCommentsQueryHookResult = ReturnType<typeof useGetCommentsQuery>;
 export type GetCommentsLazyQueryHookResult = ReturnType<typeof useGetCommentsLazyQuery>;
 export type GetCommentsQueryResult = Apollo.QueryResult<GetCommentsQuery, GetCommentsQueryVariables>;
+export const ProfileDocument = gql`
+    query Profile($name: String!) {
+  profile(name: $name) {
+    id
+    name
+    postsCount
+    followersCount
+    followingCount
+    posts {
+      id
+      title
+      image
+    }
+  }
+}
+    `;
+
+/**
+ * __useProfileQuery__
+ *
+ * To run a query within a React component, call `useProfileQuery` and pass it any options that fit your needs.
+ * When your component renders, `useProfileQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useProfileQuery({
+ *   variables: {
+ *      name: // value for 'name'
+ *   },
+ * });
+ */
+export function useProfileQuery(baseOptions: Apollo.QueryHookOptions<ProfileQuery, ProfileQueryVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useQuery<ProfileQuery, ProfileQueryVariables>(ProfileDocument, options);
+      }
+export function useProfileLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<ProfileQuery, ProfileQueryVariables>) {
+          const options = {...defaultOptions, ...baseOptions}
+          return Apollo.useLazyQuery<ProfileQuery, ProfileQueryVariables>(ProfileDocument, options);
+        }
+export type ProfileQueryHookResult = ReturnType<typeof useProfileQuery>;
+export type ProfileLazyQueryHookResult = ReturnType<typeof useProfileLazyQuery>;
+export type ProfileQueryResult = Apollo.QueryResult<ProfileQuery, ProfileQueryVariables>;
+export const NotificationDocument = gql`
+    subscription Notification {
+  notification {
+    eventType
+    notificationType
+    user {
+      id
+      name
+    }
+  }
+}
+    `;
+
+/**
+ * __useNotificationSubscription__
+ *
+ * To run a query within a React component, call `useNotificationSubscription` and pass it any options that fit your needs.
+ * When your component renders, `useNotificationSubscription` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the subscription, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useNotificationSubscription({
+ *   variables: {
+ *   },
+ * });
+ */
+export function useNotificationSubscription(baseOptions?: Apollo.SubscriptionHookOptions<NotificationSubscription, NotificationSubscriptionVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useSubscription<NotificationSubscription, NotificationSubscriptionVariables>(NotificationDocument, options);
+      }
+export type NotificationSubscriptionHookResult = ReturnType<typeof useNotificationSubscription>;
+export type NotificationSubscriptionResult = Apollo.SubscriptionResult<NotificationSubscription>;

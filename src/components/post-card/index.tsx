@@ -10,12 +10,12 @@ import {
 import { formatDate } from "@/utils/formatPostDate";
 import Image from "next/image";
 import { useState } from "react";
-import CommentInput from "./commentInput";
-import CommentIcon from "./icons/comment";
-import LikeIcon from "./icons/like";
-import MessageIcon from "./icons/message";
-import TripleDotsIcon from "./icons/tripleDots";
-import CommentsBox from "./modals/comments";
+import Comments from "../comment/comments";
+import CommentInput from "../comment/commentInput";
+import CommentIcon from "../icons/comment";
+import LikeIcon from "../icons/like";
+import MessageIcon from "../icons/message";
+import TripleDotsIcon from "../icons/tripleDots";
 
 interface Props {
    post: GetAllPostsQuery["allPosts"][number];
@@ -24,7 +24,9 @@ interface Props {
 const PostCard: React.FC<Props> = ({ post }) => {
    const [comment, setComment] = useState<string>("");
    const [showCommentsBox, setShowCommentsBox] = useState<boolean>(false);
-   const [getComments, { data: comments }] = useGetCommentsLazyQuery();
+   const [commentLimit, setCommentLimit] = useState<number>(3);
+   const [getComments, { data: comments, fetchMore: fetchMoreComments, subscribeToMore }] =
+      useGetCommentsLazyQuery();
    const [likePost, { loading: likingPost }] = useLikePostMutation({
       variables: { postId: post.id },
       update(cache) {
@@ -46,16 +48,18 @@ const PostCard: React.FC<Props> = ({ post }) => {
 
    const [addComment, { loading: addingComment }] = useCreateCommentMutation({
       variables: { postId: post.id, comment },
-      update(cache, { data }) {
+      refetchQueries: [GetCommentsDocument],
+      update(cache, {}, { variables }) {
          // only updates commentsCount and not getComments Query
+
          return cache.updateFragment(
             {
-               id: `Post:${post.id}`,
+               id: `Post:${variables?.postId}`,
                fragment: CommentsCountFragmentDoc,
             },
-            (data: any) => ({
-               ...data,
-               commentsCount: data.commentsCount + 1,
+            (_data: any) => ({
+               ..._data,
+               commentsCount: _data.commentsCount + 1,
             })
          );
       },
@@ -72,7 +76,7 @@ const PostCard: React.FC<Props> = ({ post }) => {
 
    const handleShowComments = () => {
       getComments({
-         variables: { input: { limit: 5, postId: post.id } },
+         variables: { input: { limit: commentLimit, postId: post.id } },
       }).then(() => {
          setShowCommentsBox(true);
       });
@@ -161,11 +165,13 @@ const PostCard: React.FC<Props> = ({ post }) => {
                      >{`View all ${post.commentsCount} comments`}</button>
                   </div>
                   {comments?.getComments && (
-                     <CommentsBox
+                     <Comments
                         comments={comments.getComments}
                         open={showCommentsBox}
                         setOpen={setShowCommentsBox}
                         postId={post.id}
+                        fetchMoreComments={fetchMoreComments}
+                        cursor={comments.getComments[comments.getComments.length - 1].id}
                      />
                   )}
                </>

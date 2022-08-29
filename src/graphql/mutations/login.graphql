@@ -1,5 +1,9 @@
 mutation Login($input: LoginInput!) {
    signIn(input: $input) {
       accessToken
+      error {
+         message
+         field
+      }
    }
 }

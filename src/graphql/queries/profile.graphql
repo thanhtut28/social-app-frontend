@@ -1,0 +1,14 @@
+query Profile($name: String!) {
+   profile(name: $name) {
+      id
+      name
+      postsCount
+      followersCount
+      followingCount
+      posts {
+         id
+         title
+         image
+      }
+   }
+}

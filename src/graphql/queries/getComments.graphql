@@ -1,5 +1,5 @@
 query GetComments($input: GetCommentsInput!) {
-   getComments(input: $input) {
+   getComments(input: $input) @connection(key: "comments") {
       ...CommentDetails
       children {
          ...CommentDetails

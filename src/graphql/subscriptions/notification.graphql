@@ -1,0 +1,10 @@
+subscription Notification {
+   notification {
+      eventType
+      notificationType
+      user {
+         id
+         name
+      }
+   }
+}
